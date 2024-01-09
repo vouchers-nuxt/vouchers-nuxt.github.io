@@ -1,0 +1,55 @@
+<template>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+              Cargo #{{ role?.id || 0 }}
+            </h6>
+          </div>
+          <div class="card-body">
+            <p>Nome: {{ role.name || "N/A" }}</p>
+            <p>Descrição: {{ role.description || "N/A" }}</p>
+            <div class="form-group">
+              <label for="">Permissões:</label>
+              <div class="inline-permissions">
+                <div v-for="(item, index) in role.permissions">
+                  <span class="badge bg-secondary">{{ item.name }}</span
+                  >{{ index < role.permissions.length - 1 ? "," : "" }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import Swal from "sweetalert2";
+import { useRolesStore } from "@/stores/roles";
+
+const roleStore = useRolesStore();
+const { $blockui } = useNuxtApp();
+const role = useState("role", () => ({}));
+const router = useRoute();
+
+const id = router.params.id;
+onMounted(async () => {
+  try {
+    $blockui().start();
+    role.value = await roleStore.findRole(id);
+
+    $blockui().stop();
+  } catch (err) {
+    let message = err.data?.message || "Não foi possivel carregar cargo!";
+    Swal.fire({
+      title: "Error!",
+      text: message,
+      icon: "error",
+    });
+  }
+});
+</script>
